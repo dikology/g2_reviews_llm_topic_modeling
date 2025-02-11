@@ -1,13 +1,42 @@
+#!/usr/bin/env python3
+
 import pandas as pd
 import streamlit as st
-import json
+import os
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
 
-from src.text_utils import split_into_sentences
+# from src.text_utils import split_into_sentences
+
+# Load environment variables from .env file
+load_dotenv()
 
 
-def load_json_data(file_path):
-    with open(file_path, "r") as file:
-        return json.load(file)
+def load_data():
+    engine_dws = create_engine(
+        "postgresql://{}:{}@{}:{}/dws".format(
+            os.environ.get("DWS_USER"),
+            os.environ.get("DWS_PWD"),
+            os.environ.get("DWS_HOST"),
+            os.environ.get("DWS_PORT"),
+        )
+    )
+
+    # Execute the SQL query using SQLAlchemy
+    query = """
+    select *
+    from dm_smarthome_analytics_team.csi_source cs
+    where cs.comment_text is not null
+        and main_score < 5
+        and cs.question not in ('Откуда вы узнали об умном доме Sber?')
+    limit 10
+    """
+    with engine_dws.connect() as connection:
+        data = pd.read_sql(query, connection)
+
+    print(f"got data from SQL: {data}")
+
+    return data
 
 
 def normalize_data(data):
@@ -50,14 +79,16 @@ def extract_answers(df):
 
 def drop_rows_with_answers_raw(df):
     # Drop rows where 'answers_raw' is not NaN (i.e., has a value)
-    # This is because splitting this raw text is beyond the scope of this project (for now)
+    # This is because splitting this raw text
+    # is beyond the scope of this project (for now)
     return df[df["answers_raw"].isna()]
 
 
 @st.cache_data(show_spinner=False)
 def explode_reviews(df, column_name):
     """
-    A function that explodes the reviews with multiple sentences into multiple rows with 1 sentence each.
+    A function that explodes the reviews with multiple
+    sentences into multiple rows with 1 sentence each.
 
     Parameters:
     - df: A pandas DataFrame. The DataFrame containing the reviews.
@@ -68,16 +99,22 @@ def explode_reviews(df, column_name):
     """
     df = df.copy()
     # Split reviews into sentences
-    df[column_name] = df[column_name].astype(str).apply(split_into_sentences)
+    # df[column_name] = df[column_name].astype(str).apply(split_into_sentences)
 
     # Explode the DataFrame and reset the index
     return df.explode(column_name).reset_index(drop=True).dropna(subset=[column_name])
 
 
-def preprocess_data(path_to_file):
-    data = load_json_data(path_to_file)
+# 01 - this func is being called by streamlit first
+def preprocess_data():
+    # jupySQL query
+    data = load_data()
     df = normalize_data(data)
     df = rename_columns(df)
     df = parse_dates(df, ["date_submitted", "date_published", "date_updated"])
     df = extract_answers(df)
     return drop_rows_with_answers_raw(df)
+
+
+if __name__ == "__main__":
+    preprocess_data()

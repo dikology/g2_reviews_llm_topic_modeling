@@ -22,7 +22,10 @@ def select_reviews_of_type(df, review_type):
         raise ValueError("Unexpected review type")
 
 
-df_cleaned = preprocess_data("./data/g2_reviews.json")
+# entry point
+# preprocess_data returns a dataframe based on a given json.
+# I can make it void instead because I'll go for SQL
+df_cleaned = preprocess_data()
 base_df = df_cleaned[
     [
         "id",
@@ -48,7 +51,7 @@ base_df = df_cleaned[
 st.set_page_config(layout="wide")
 sb = st.sidebar
 
-## Select a company
+# Select a company
 company_counts = base_df["product.slug"].value_counts()
 companies_with_counts = {
     f"{company} ({count})": company for company, count in company_counts.items()
@@ -56,7 +59,7 @@ companies_with_counts = {
 selected_company_label = sb.selectbox("Company", companies_with_counts.keys())
 selected_company = companies_with_counts[selected_company_label]
 
-## Select a review type
+# Select a review type
 review_type = sb.radio("Review Type", ["Likes", "Dislikes", "Use-case"])
 
 df_of_type = select_reviews_of_type(df_cleaned, review_type)
@@ -97,18 +100,18 @@ clustered_df["cluster_label"] = clustered_df[f"{REVIEW_COL}_embeddings_cluster_i
     top_cluster_map
 )
 
-## Reduce the embedding space to 2D for visualization
+# Reduce the embedding space to 2D for visualization
 reduce_dim_df = reduce_dimensions_append_array(
     clustered_df, f"{REVIEW_COL}_embeddings", num_dimensions=2, dim_col_name="dims_2d"
 )
 
 
-#### FILTERS
+# FILTERS
 filtered_df = radio_filter("Source", sb, reduce_dim_df, "source.type")
 filtered_df = radio_filter("Segment", sb, filtered_df, "segment")
 filtered_df = range_filter("Review Date", sb, filtered_df, "date_published")
 
-### Colour Selector
+# Colour Selector
 colour_by_selected = st.radio(
     "Colour by", options=["Cluster", "Segment", "Source"], index=0, horizontal=True
 )
