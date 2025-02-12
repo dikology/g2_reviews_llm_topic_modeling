@@ -1,8 +1,8 @@
 import streamlit as st
 
 from src.preprocess import explode_reviews, preprocess_data
+from src.embeddings import embed_reviews  # , reduce_dimensions_append_array
 
-# from src.embeddings import embed_reviews, reduce_dimensions_append_array
 # from src.extract_topic import summarize_sequential
 # from src.cluster import cluster_and_append, find_closest_to_centroid
 # from src.visualize import visualize_embeddings, plot_over_time
@@ -59,13 +59,9 @@ sb = st.sidebar
 with st.spinner("Parsing review sentences..."):
     xpl_df = explode_reviews(df_cleaned, REVIEW_COL)
 
-print("exploded")
-
 # Embed reviews
-# with st.spinner("Vectorizing Reviews..."):
-#     embedded_df = embed_reviews(xpl_df, REVIEW_COL)
-
-# print('embedded')
+with st.spinner("Vectorizing Reviews..."):
+    embedded_df = embed_reviews(xpl_df, REVIEW_COL)
 
 # Filter to selected company
 # company_df = base_df[base_df["product.slug"] == selected_company].merge(
