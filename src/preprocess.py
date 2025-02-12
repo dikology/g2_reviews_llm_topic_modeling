@@ -34,54 +34,69 @@ def load_data():
     with engine_dws.connect() as connection:
         data = pd.read_sql(query, connection)
 
-    print(f"got data from SQL: {data}")
+    print(f"got data from SQL: {data.head()}")
 
     return data
 
 
-def normalize_data(data):
-    return pd.json_normalize(data)
+def load_data_file():
+    # Load data from the specified Excel file and sheet
+    return pd.read_excel("data/input.xlsx", sheet_name="массив_full")
 
 
 def rename_columns(df):
+
     column_mapping = {
-        "location.country": "country",
-        "location.region": "region",
-        "location.primary": "location_primary",
-        "date.submitted": "date_submitted",
-        "date.published": "date_published",
-        "date.updated": "date_updated",
+        "ROW_ID": "row_id",
+        "EVENT_TYPE_ID": "event_type_id",
+        "EVENT_NAME": "event_name",
+        "product_name": "product_name",
+        "QUESTION_NUM": "question_num",
+        "QUESTION": "question",
+        "COMMENT_TEXT": "comment",
+        "ANSWER_TXT": "answer",
+        "ANSWER_DT": "datetime",
+        "segm_general": "segment",
+        "v21": "v21",
+        "v22": "v22",
+        "v23": "v23",
+        "1": "1",
+        "2": "2",
+        "3": "3",
+        "4": "4",
+        "5": "5",
+        "Месяц": "month",
+        "Неделя": "week",
+        "квартал": "quarter",
     }
     return df.rename(columns=column_mapping)
 
 
 def parse_dates(df, date_columns):
     for col in date_columns:
-        df[col] = pd.to_datetime(df[col], utc=True).dt.date
+        df[col] = pd.to_datetime(
+            df[col], utc=True, errors="coerce"
+        )  # Use errors='coerce' to handle invalid parsing
         # Convert to date, handling NaT values by converting them to None
         df[col] = df[col].apply(lambda x: x if pd.notna(x) else None)
+
     return df
 
 
-def extract_answers(df):
-    def extract_answer_element(answers, index):
-        if isinstance(answers, list) and len(answers) > index:
-            return answers[index]
-        return None
+def extract_comments(df):
+    # Drop duplicates
+    df = df.drop_duplicates()
 
-    df["likes"] = df["answers"].apply(lambda x: extract_answer_element(x, 0))
-    df["dislikes"] = df["answers"].apply(lambda x: extract_answer_element(x, 1))
-    df["recommendations"] = df["answers"].apply(lambda x: extract_answer_element(x, 2))
-    df["usecase"] = df["answers"].apply(lambda x: extract_answer_element(x, 3))
+    # Keep only rows with non-empty 'comment'
+    df = df[df["comment"].notna() & (df["comment"] != "")]
 
-    return df.drop("answers", axis=1)
+    # Filter for rows where 'datetime' is in January 2025
+    df = df[df["datetime"].dt.year == 2025]
+    df = df[df["datetime"].dt.month == 1]
 
+    print(df.info())
 
-def drop_rows_with_answers_raw(df):
-    # Drop rows where 'answers_raw' is not NaN (i.e., has a value)
-    # This is because splitting this raw text
-    # is beyond the scope of this project (for now)
-    return df[df["answers_raw"].isna()]
+    return df
 
 
 @st.cache_data(show_spinner=False)
@@ -105,15 +120,12 @@ def explode_reviews(df, column_name):
     return df.explode(column_name).reset_index(drop=True).dropna(subset=[column_name])
 
 
-# 01 - this func is being called by streamlit first
 def preprocess_data():
-    # jupySQL query
-    data = load_data()
-    df = normalize_data(data)
-    df = rename_columns(df)
-    df = parse_dates(df, ["date_submitted", "date_published", "date_updated"])
-    df = extract_answers(df)
-    return drop_rows_with_answers_raw(df)
+    data = load_data_file()
+    df = rename_columns(data)
+    df = parse_dates(df, ["datetime"])
+    df = extract_comments(df)
+    return df
 
 
 if __name__ == "__main__":
