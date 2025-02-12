@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-
 import pandas as pd
 import streamlit as st
 import os
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 
-# from src.text_utils import split_into_sentences
+from src.text_utils import split_into_sentences
 
 # Load environment variables from .env file
 load_dotenv()
@@ -114,7 +112,7 @@ def explode_reviews(df, column_name):
     """
     df = df.copy()
     # Split reviews into sentences
-    # df[column_name] = df[column_name].astype(str).apply(split_into_sentences)
+    df[column_name] = df[column_name].astype(str).apply(split_into_sentences)
 
     # Explode the DataFrame and reset the index
     return df.explode(column_name).reset_index(drop=True).dropna(subset=[column_name])
@@ -126,7 +124,3 @@ def preprocess_data():
     df = parse_dates(df, ["datetime"])
     df = extract_comments(df)
     return df
-
-
-if __name__ == "__main__":
-    preprocess_data()
