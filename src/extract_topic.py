@@ -108,9 +108,9 @@ def summarize_sequential(top_n_cluster):
         data and cluster labels.
     """
     # Limit top_n_cluster to 1 for testing purposes
-    top_n_cluster = dict(
-        list(top_n_cluster.items())[:10]
-    )  # Keep only 10 clusters for testing
+    # top_n_cluster = dict(
+    #     list(top_n_cluster.items())[:1]
+    # )
 
     # Creating a progress bar
     progress_bar = st.progress(0)
