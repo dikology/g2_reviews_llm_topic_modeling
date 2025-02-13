@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "g2-reviews-llm-topic-modeling"
+version = "0.1.0"
+description = ""
+authors = ["dikology <dgimaletdinov@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+streamlit = "^1.42.0"
+sqlalchemy = "^2.0.38"
+jupysql = "^0.10.17"
+python-dotenv = "^1.0.1"
+psycopg2-binary = "^2.9.10"
+black = "^25.1.0"
+flake8 = "^7.1.1"
+pre-commit = "^4.1.0"
+openpyxl = "^3.1.5"
+umap = "^0.1.1"
+nltk = "^3.9.1"
+sentence-transformers = "^3.4.1"
+langchain-core = "^0.3.34"
+langchain = "^0.3.18"
+torch = "^2.6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88

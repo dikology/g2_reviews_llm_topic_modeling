@@ -64,3 +64,65 @@ streamlit run streamlit_app.py
 ```
 
 This will start the Streamlit server and launch the app in your default web browser.
+
+```streamlit_chunk.py
+# ... existing code ...
+
+import os
+import pandas as pd
+
+# Define the path to the CSV file
+csv_file_path = "data/reduce_dim_df.csv"
+
+# Check if the CSV file exists
+if os.path.exists(csv_file_path):
+    # Load the existing data from the CSV file
+    reduce_dim_df = pd.read_csv(csv_file_path)
+else:
+    # Explode the sentences of that review type
+    with st.spinner("Parsing review sentences..."):
+        xpl_df = explode_reviews(df_cleaned, REVIEW_COL)
+
+    # Embed reviews
+    with st.spinner("Vectorizing Reviews..."):
+        embedded_df = embed_reviews(xpl_df, REVIEW_COL)
+
+    with st.spinner("Clustering Reviews..."):
+        clustered_df = cluster_and_append(embedded_df, f"{REVIEW_COL}_embeddings", 15)
+
+    NUM_REVIEWS_TO_USE_IN_CLUSTER_LABEL = 30
+    top_cluster_docs = find_closest_to_centroid(
+        clustered_df,
+        NUM_REVIEWS_TO_USE_IN_CLUSTER_LABEL,
+        f"{REVIEW_COL}_embeddings",
+        f"{REVIEW_COL}_embeddings_cluster_id",
+        REVIEW_COL,
+    )
+    print(f"number of clusters: {len(top_cluster_docs)}")
+    top_cluster_docs = summarize_sequential(top_cluster_docs)
+    top_cluster_map = {
+        cluster_id: data["cluster_label"] for cluster_id, data in top_cluster_docs.items()
+    }
+    clustered_df["cluster_label"] = clustered_df[f"{REVIEW_COL}_embeddings_cluster_id"].map(
+        top_cluster_map
+    )
+
+    # # Reduce the embedding space to 2D for visualization
+    reduce_dim_df = reduce_dimensions_append_array(
+        clustered_df, f"{REVIEW_COL}_embeddings", num_dimensions=2, dim_col_name="dims_2d"
+    )
+
+    # Save the reduce_dim_df to CSV for future use
+    reduce_dim_df.to_csv(csv_file_path, index=False)
+
+# ... existing code ...
+fig_clusters = visualize_embeddings(
+    reduce_dim_df,
+    coords_col="dims_2d",
+    review_text_column=REVIEW_COL,
+    colour_by_column="cluster_label",
+)
+
+st.plotly_chart(fig_clusters, use_container_width=True)
+
+# ... existing code ...
