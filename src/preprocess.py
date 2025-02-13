@@ -92,6 +92,8 @@ def extract_comments(df):
     df = df[df["datetime"].dt.year == 2025]
     df = df[df["datetime"].dt.month == 1]
 
+    df = df[df["answer"] != "5"]
+
     # print(df.info())
 
     return df
