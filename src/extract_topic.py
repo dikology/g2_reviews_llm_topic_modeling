@@ -4,40 +4,31 @@ import streamlit as st
 
 from langchain_core.globals import set_llm_cache
 from langchain.cache import SQLiteCache
-from langchain_openai import ChatOpenAI
+from langchain_gigachat.chat_models import GigaChat
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.output_parser import StrOutputParser
 
-from src.constants import OPENAI_KEY
+from src.constants import GIGACHAT_KEY
 
 set_llm_cache(SQLiteCache(database_path=".langchain.db"))
 # https://developers.sber.ru/docs/ru/gigachain/get-started/quickstart
-llm3 = ChatOpenAI(
-    temperature=0,
-    openai_api_key=OPENAI_KEY,
-    model="gpt-3.5-turbo-1106",
-    cache=True,
-    max_tokens=500,
-)
 
-llm4 = ChatOpenAI(
-    temperature=0,
-    openai_api_key=OPENAI_KEY,
-    model="gpt-4-1106-preview",
-    cache=True,
-    max_tokens=500,
+model = GigaChat(
+    credentials=GIGACHAT_KEY,
+    scope="GIGACHAT_API_PERS",
+    model="GigaChat",
+    streaming=False,
+    verify_ssl_certs=False,
 )
 
 
 @st.cache_data(show_spinner=False)
-def summarize_cluster(_llm: ChatOpenAI, review_type_text: str, texts: list):
+def summarize_cluster(_llm: GigaChat, texts: list):
     """
     Generates a summary label for a cluster of customer reviews.
 
     Args:
-        _llm (ChatOpenAI): The expert summarizer model.
-        review_type (str): The type of reviews to summarize
-        ('Likes', 'Dislikes', or 'Use-case').
+        _llm (GigaChat): The expert summarizer model.
         texts (list): A list of customer reviews.
 
     Returns:
@@ -55,9 +46,6 @@ def summarize_cluster(_llm: ChatOpenAI, review_type_text: str, texts: list):
         Ensure the label generated is not too vague.
 
         The reviews are enclosed in triple backticks (```).
-
-        The reviews are describing {review_type_text}. If it seems like most
-        of the reviews are not describing that, simply return "Uncategorized".
 
         ---
         EXAMPLE 1
@@ -102,13 +90,11 @@ def summarize_cluster(_llm: ChatOpenAI, review_type_text: str, texts: list):
         [f"Review {i}: {txt}" for i, txt in enumerate(texts)]
     )
     chain = prompt | _llm | StrOutputParser()
-
-    return chain.invoke(
-        {"reviews_text": stuffed_reviews_txt, "review_type_text": review_type_text}
-    )
+    print("chain", chain)
+    return chain.invoke({"reviews_text": stuffed_reviews_txt})
 
 
-def summarize_sequential(top_n_cluster, review_type):
+def summarize_sequential(top_n_cluster):
     """
     Generate a summary for each cluster in a top N cluster dictionary.
 
@@ -122,16 +108,12 @@ def summarize_sequential(top_n_cluster, review_type):
         dict: A dictionary containing the top N clusters with their associated
         data and cluster labels.
     """
+    # Limit top_n_cluster to 1 for testing purposes
+    top_n_cluster = dict(list(top_n_cluster.items())[:1])  # Keep only the first cluster
+
     # Creating a progress bar
     progress_bar = st.progress(0)
     progress_text = st.empty()
-
-    if review_type == "Likes":
-        review_type_text = "only what the user likes about the product"
-    elif review_type == "Dislikes":
-        review_type_text = "only what the user dislikes about the product"
-    else:
-        review_type_text = "what the user's use-case is for the product"
 
     num_clusters = len(top_n_cluster)
     for i, (cluster_id, val) in enumerate(top_n_cluster.items()):
@@ -139,7 +121,7 @@ def summarize_sequential(top_n_cluster, review_type):
             top_n_cluster[-1]["cluster_label"] = "Uncategorized"
         else:
             top_n_cluster[cluster_id]["cluster_label"] = summarize_cluster(
-                llm4, review_type_text, val["texts"]
+                model, val["texts"]
             )
 
         progress = (i + 1) / num_clusters

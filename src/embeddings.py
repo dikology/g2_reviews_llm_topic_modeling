@@ -46,7 +46,9 @@ def generate_embeddings_free(txt_series):
     Returns:
         numpy.ndarray: An array of embeddings generated for the text series.
     """
-    embedder = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+    embedder = SentenceTransformer(
+        "sentence-transformers/distiluse-base-multilingual-cased-v2"
+    )
     na_filled = txt_series.fillna("", inplace=False)
     # Generate embeddings for the text column
     return embedder.encode(na_filled.tolist())

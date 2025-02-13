@@ -3,7 +3,7 @@ import streamlit as st
 from src.preprocess import explode_reviews, preprocess_data
 from src.embeddings import embed_reviews  # , reduce_dimensions_append_array
 
-# from src.extract_topic import summarize_sequential
+from src.extract_topic import summarize_sequential
 from src.cluster import cluster_and_append, find_closest_to_centroid
 
 # from src.visualize import visualize_embeddings, plot_over_time
@@ -82,14 +82,13 @@ top_cluster_docs = find_closest_to_centroid(
     REVIEW_COL,
 )
 print(f"number of clusters: {len(top_cluster_docs)}")
-# top_cluster_docs = summarize_sequential(top_cluster_docs, review_type)
-# top_cluster_map = {
-#     cluster_id: data["cluster_label"] for cluster_id, data in top_cluster_docs.items()
-# }
-# clustered_df["cluster_label"] =
-# clustered_df[f"{REVIEW_COL}_embeddings_cluster_id"].map(
-#     top_cluster_map
-# )
+top_cluster_docs = summarize_sequential(top_cluster_docs)
+top_cluster_map = {
+    cluster_id: data["cluster_label"] for cluster_id, data in top_cluster_docs.items()
+}
+clustered_df["cluster_label"] = clustered_df[f"{REVIEW_COL}_embeddings_cluster_id"].map(
+    top_cluster_map
+)
 
 # # Reduce the embedding space to 2D for visualization
 # reduce_dim_df = reduce_dimensions_append_array(
