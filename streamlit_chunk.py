@@ -1,12 +1,13 @@
 import streamlit as st
 
 from src.preprocess import explode_reviews, preprocess_data
-from src.embeddings import embed_reviews  # , reduce_dimensions_append_array
+from src.embeddings import embed_reviews, reduce_dimensions_append_array
 
 from src.extract_topic import summarize_sequential
 from src.cluster import cluster_and_append, find_closest_to_centroid
 
-# from src.visualize import visualize_embeddings, plot_over_time
+from src.visualize import visualize_embeddings  # , plot_over_time
+
 # from src.ui import radio_filter, range_filter
 
 
@@ -91,9 +92,9 @@ clustered_df["cluster_label"] = clustered_df[f"{REVIEW_COL}_embeddings_cluster_i
 )
 
 # # Reduce the embedding space to 2D for visualization
-# reduce_dim_df = reduce_dimensions_append_array(
-#     clustered_df, f"{REVIEW_COL}_embeddings", num_dimensions=2, dim_col_name="dims_2d"
-# )
+reduce_dim_df = reduce_dimensions_append_array(
+    clustered_df, f"{REVIEW_COL}_embeddings", num_dimensions=2, dim_col_name="dims_2d"
+)
 
 
 # # FILTERS
@@ -101,26 +102,16 @@ clustered_df["cluster_label"] = clustered_df[f"{REVIEW_COL}_embeddings_cluster_i
 # filtered_df = radio_filter("Segment", sb, filtered_df, "segment")
 # filtered_df = range_filter("Review Date", sb, filtered_df, "date_published")
 
-# # Colour Selector
-# colour_by_selected = st.radio(
-#     "Colour by", options=["Cluster", "Segment", "Source"], index=0, horizontal=True
-# )
-# colour_by_col = {
-#     "Segment": "segment",
-#     "Source": "source.type",
-#     "Cluster": "cluster_label",
-# }[colour_by_selected]
+
+fig_clusters = visualize_embeddings(
+    reduce_dim_df,
+    coords_col="dims_2d",
+    review_text_column=REVIEW_COL,
+    colour_by_column="cluster_label",
+)
 
 
-# fig_clusters = visualize_embeddings(
-#     filtered_df,
-#     coords_col="dims_2d",
-#     review_text_column=REVIEW_COL,
-#     colour_by_column=colour_by_col,
-# )
-
-
-# st.plotly_chart(fig_clusters, use_container_width=True)
+st.plotly_chart(fig_clusters, use_container_width=True)
 
 
 # fig_publish_dates = plot_over_time(filtered_df, "date_published")

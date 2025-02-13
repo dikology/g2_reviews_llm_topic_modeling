@@ -90,7 +90,6 @@ def summarize_cluster(_llm: GigaChat, texts: list):
         [f"Review {i}: {txt}" for i, txt in enumerate(texts)]
     )
     chain = prompt | _llm | StrOutputParser()
-    print("chain", chain)
     return chain.invoke({"reviews_text": stuffed_reviews_txt})
 
 
