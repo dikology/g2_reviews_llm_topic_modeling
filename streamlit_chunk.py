@@ -12,6 +12,7 @@ from src.visualize import visualize_embeddings  # , plot_over_time
 
 
 REVIEW_COL = "comment"
+reduced_dim_csv_path = "data/reduced_dim_reviews.csv"
 
 
 # def select_reviews_of_type(df, review_type):
@@ -96,7 +97,6 @@ reduce_dim_df = reduce_dimensions_append_array(
     clustered_df, f"{REVIEW_COL}_embeddings", num_dimensions=2, dim_col_name="dims_2d"
 )
 
-
 # # FILTERS
 # filtered_df = radio_filter("Source", sb, reduce_dim_df, "source.type")
 # filtered_df = radio_filter("Segment", sb, filtered_df, "segment")
@@ -110,6 +110,11 @@ fig_clusters = visualize_embeddings(
     colour_by_column="cluster_label",
 )
 
+# Convert the list to a string for saving
+reduce_dim_df["dims_2d"] = reduce_dim_df["dims_2d"].apply(
+    lambda x: ",".join(map(str, x))
+)
+reduce_dim_df.to_csv(reduced_dim_csv_path, index=False)
 
 st.plotly_chart(fig_clusters, use_container_width=True)
 
