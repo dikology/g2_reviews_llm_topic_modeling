@@ -1,4 +1,3 @@
-from sklearn.cluster import KMeans
 import hdbscan
 import numpy as np
 import umap
@@ -19,11 +18,13 @@ def cluster_column_embeddings(column_embeddings):
 
 def cluster_column_embeddings_umap(column_embeddings, n_components=None):
     """
-    Generates a UMAP embedding for the given column embeddings and performs clustering using HDBSCAN.
+    Generates a UMAP embedding for the given column embeddings
+    and performs clustering using HDBSCAN.
 
     Args:
         column_embeddings (list): A list of column embeddings.
-        n_components (int, optional): The number of dimensions in the UMAP embedding. If not provided, it will be set to the length of column_embeddings.
+        n_components (int, optional): The number of dimensions in the UMAP embedding.
+        If not provided, it will be set to the length of column_embeddings.
 
     Returns:
         list: A list of cluster labels for each column embedding.
@@ -37,19 +38,25 @@ def cluster_column_embeddings_umap(column_embeddings, n_components=None):
 
 
 @st.cache_data(show_spinner=False)
-def cluster_and_append(df_original, embeddings_column, n_components=None):
+def cluster_and_append(df_original, embeddings_column, n_components=2):
     """
-    A function that clusters the embeddings in a DataFrame and appends the cluster labels as a new column.
+    A function that clusters the embeddings in a DataFrame
+    and appends the cluster labels as a new column.
 
     Parameters:
     - df_original: The original DataFrame containing the embeddings.
-    - embeddings_column: The name of the column in the DataFrame that contains the embeddings.
-    - n_components: The number of dimensions to reduce the embeddings to using UMAP. If None, no reduction is performed.
+    - embeddings_column: The name of the column in the DataFrame
+    that contains the embeddings.
+    - n_components: The number of dimensions to reduce the embeddings to using UMAP.
+    If None, no reduction is performed.
 
     Returns:
-    - df: A copy of the original DataFrame with an additional column containing the cluster labels.
+    - df: A copy of the original DataFrame with an additional
+    column containing the cluster labels.
     """
     df = df_original.copy()
+
+    df = df.dropna(subset=embeddings_column)
 
     # Convert lists of embeddings to a 2D NumPy array
     embeddings_array = np.array(df[embeddings_column].tolist())
@@ -84,9 +91,11 @@ def find_closest_to_centroid(df, top_N, embeddings_column, cluster_column, text_
         text_column (str): The name of the column containing the corresponding text.
 
     Returns:
-        dict: A dictionary where the keys are the cluster IDs and the values are dictionaries
-              with keys 'indices' and 'texts'. 'indices' contains the indices of the closest
-              embeddings to the centroid, and 'texts' contains the corresponding text.
+        dict: A dictionary where the keys are the cluster IDs
+        and the values are dictionaries
+        with keys 'indices' and 'texts'. 'indices' contains the indices
+        of the closest
+        embeddings to the centroid, and 'texts' contains the corresponding text.
     """
     closest_data = {}
     unique_clusters = df[cluster_column].unique()

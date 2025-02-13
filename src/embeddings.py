@@ -12,15 +12,18 @@ from sklearn.decomposition import PCA
 @st.cache_data(show_spinner=False)
 def get_pca_components_for_variance(embeddings, variance_threshold=0.8):
     """
-    Compute the number of principal components needed to explain a given variance threshold.
+    Compute the number of principal components needed
+    to explain a given variance threshold.
 
     Parameters:
         embeddings (numpy.ndarray): The input embeddings to perform PCA on.
-        variance_threshold (float, optional): The desired threshold of explained variance.
+        variance_threshold (float, optional):
+        The desired threshold of explained variance.
             Defaults to 0.80.
 
     Returns:
-        int: The number of principal components that explain the given variance threshold.
+        int: The number of principal components that explain
+        the given variance threshold.
     """
     pca = PCA()
     pca.fit(embeddings)
@@ -34,7 +37,8 @@ def get_pca_components_for_variance(embeddings, variance_threshold=0.8):
 
 def generate_embeddings_free(txt_series):
     """
-    Generate embeddings for the given text series using a pre-trained SentenceTransformer model.
+    Generate embeddings for the given text series using a pre-trained
+    SentenceTransformer model.
 
     Parameters:
         txt_series (pandas.Series): A pandas series containing text data.
@@ -51,16 +55,21 @@ def generate_embeddings_free(txt_series):
 @st.cache_data(show_spinner=False)
 def embed_reviews(df, column):
     """
-    Caches the result of the function and returns a DataFrame with an additional column that contains the embeddings of the reviews in the specified column.
+    Caches the result of the function and returns a DataFrame with
+    an additional column that contains the embeddings
+    of the reviews in the specified column.
 
     Parameters:
     - df (DataFrame): The DataFrame containing the reviews.
     - column (str): The name of the column containing the reviews.
 
     Returns:
-    - df (DataFrame): The modified DataFrame with an additional column containing the embeddings.
+    - df (DataFrame): The modified DataFrame with
+    an additional column containing the embeddings.
     """
     df[f"{column}_embeddings"] = pd.Series(list(generate_embeddings_free(df[column])))
+
+    # TODO: check why there are NaNs in embedding column
 
     return df
 
@@ -70,13 +79,16 @@ def reduce_dimensions_append_array(
     df, vector_col, num_dimensions=2, dim_col_name="dims"
 ):
     """
-    Reduces the dimensions of a DataFrame by applying UMAP algorithm to the specified vector column.
+    Reduces the dimensions of a DataFrame by applying
+    UMAP algorithm to the specified vector column.
 
     Parameters:
         df (pandas.DataFrame): The input DataFrame.
         vector_col (str): The name of the column containing the vector data.
-        num_dimensions (int, optional): The number of dimensions to reduce the data to. Defaults to 2.
-        dim_col_name (str, optional): The name of the column to store the reduced dimensions. Defaults to "dimensions".
+        num_dimensions (int, optional): The number of dimensions
+        to reduce the data to. Defaults to 2.
+        dim_col_name (str, optional): The name of the column to store
+        the reduced dimensions. Defaults to "dimensions".
 
     Returns:
         pandas.DataFrame: The DataFrame with the reduced dimensions column added.
