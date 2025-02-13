@@ -70,7 +70,7 @@ with st.spinner("Vectorizing Reviews..."):
 # )
 
 with st.spinner("Clustering Reviews..."):
-    clustered_df = cluster_and_append(embedded_df, f"{REVIEW_COL}_embeddings", 5)
+    clustered_df = cluster_and_append(embedded_df, f"{REVIEW_COL}_embeddings", 15)
 
 
 NUM_REVIEWS_TO_USE_IN_CLUSTER_LABEL = 30
