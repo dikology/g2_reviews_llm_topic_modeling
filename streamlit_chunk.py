@@ -4,7 +4,7 @@ from src.preprocess import explode_reviews, preprocess_data
 from src.embeddings import embed_reviews  # , reduce_dimensions_append_array
 
 # from src.extract_topic import summarize_sequential
-from src.cluster import cluster_and_append  # , find_closest_to_centroid
+from src.cluster import cluster_and_append, find_closest_to_centroid
 
 # from src.visualize import visualize_embeddings, plot_over_time
 # from src.ui import radio_filter, range_filter
@@ -70,18 +70,18 @@ with st.spinner("Vectorizing Reviews..."):
 # )
 
 with st.spinner("Clustering Reviews..."):
-    clustered_df = cluster_and_append(embedded_df, f"{REVIEW_COL}_embeddings")
+    clustered_df = cluster_and_append(embedded_df, f"{REVIEW_COL}_embeddings", 5)
 
 
 NUM_REVIEWS_TO_USE_IN_CLUSTER_LABEL = 30
-# top_cluster_docs = find_closest_to_centroid(
-#     clustered_df,
-#     NUM_REVIEWS_TO_USE_IN_CLUSTER_LABEL,
-#     f"{REVIEW_COL}_embeddings",
-#     f"{REVIEW_COL}_embeddings_cluster_id",
-#     REVIEW_COL,
-# )
-
+top_cluster_docs = find_closest_to_centroid(
+    clustered_df,
+    NUM_REVIEWS_TO_USE_IN_CLUSTER_LABEL,
+    f"{REVIEW_COL}_embeddings",
+    f"{REVIEW_COL}_embeddings_cluster_id",
+    REVIEW_COL,
+)
+print(f"number of clusters: {len(top_cluster_docs)}")
 # top_cluster_docs = summarize_sequential(top_cluster_docs, review_type)
 # top_cluster_map = {
 #     cluster_id: data["cluster_label"] for cluster_id, data in top_cluster_docs.items()

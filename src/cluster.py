@@ -32,7 +32,7 @@ def cluster_column_embeddings_umap(column_embeddings, n_components=None):
     n_components = len(column_embeddings) if n_components is None else n_components
     umap_model = umap.UMAP(n_components, random_state=42)
     umap_embeddings = umap_model.fit_transform(column_embeddings)
-    clusterer = hdbscan.HDBSCAN(min_cluster_size=5, min_samples=3)
+    clusterer = hdbscan.HDBSCAN(min_cluster_size=50, min_samples=10)
     clusterer.fit(umap_embeddings)
     return clusterer.labels_
 
