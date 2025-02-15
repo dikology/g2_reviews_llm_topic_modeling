@@ -94,7 +94,7 @@ def extract_comments(df):
 
     df = df[df["answer"] != 5]
 
-    # print(df.info())
+    print(df.info())
 
     return df
 
