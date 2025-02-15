@@ -82,11 +82,11 @@ def parse_dates(df, date_columns):
 
 
 def extract_comments(df):
-    # Drop duplicates
-    df = df.drop_duplicates()
-
     # Keep only rows with non-empty 'comment'
     df = df[df["comment"].notna() & (df["comment"] != "")]
+
+    # Drop duplicates
+    df = df.drop_duplicates(subset=["comment"])
 
     # Filter for rows where 'datetime' is in January 2025
     df = df[df["datetime"].dt.year == 2025]
